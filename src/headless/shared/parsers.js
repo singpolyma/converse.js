@@ -145,6 +145,16 @@ export function getOpenGraphMetadata (stanza) {
                 return data;
             }
         }
+    } else {
+        const descs = sizzle(`> Description[xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"]`, stanza);
+        return {
+            'ogp_metadata': descs.map((desc) =>
+                sizzle(`> *[xmlns="https://ogp.me/ns#"]`, desc).reduce((acc, el) => {
+                    acc["og:" + el.nodeName] = el.textContent;
+                    return acc;
+                }, { "og:url": desc.getAttributeNS("http://www.w3.org/1999/02/22-rdf-syntax-ns#", "about") })
+            )
+        };
     }
     return {};
 }
