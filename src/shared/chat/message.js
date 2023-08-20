@@ -15,6 +15,7 @@ import tplRetraction from './templates/retraction.js';
 import tplSpinner from 'templates/spinner.js';
 import { CustomElement } from 'shared/components/element.js';
 import { __ } from 'i18n';
+import { stringToArrayBuffer } from '@converse/headless/utils/arraybuffer';
 import { _converse, api, converse } from  '@converse/headless/core';
 import { getAppSettings } from '@converse/headless/shared/settings/utils.js';
 import { getHats } from './utils.js';
@@ -67,6 +68,9 @@ export default class Message extends CustomElement {
         await this.chatbox.initialized;
         await this.chatbox.messages.fetched;
         this.model = this.chatbox.messages.get(this.mid);
+        if (this.model && this.model.get('thread')) {
+            this.model.set('thread_sha1', await crypto.subtle.digest('SHA-1', stringToArrayBuffer(this.model.get('thread'))));
+        }
         this.model && this.requestUpdate();
     }
 
@@ -142,6 +146,14 @@ export default class Message extends CustomElement {
         await api.trigger(this.model.get('retry_event_id'), {'synchronous': true});
         this.model.destroy();
         this.parentElement.removeChild(this);
+    }
+
+    async onClickThread() {
+        const chatbox = this.model.collection.chatbox;
+        chatbox.save({
+            'thread': this.model.get('thread'),
+            'thread_sha1': await crypto.subtle.digest('SHA-1', stringToArrayBuffer(this.model.get('thread')))
+        });
     }
 
     isRetracted () {

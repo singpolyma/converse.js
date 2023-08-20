@@ -18,6 +18,7 @@ export const VIEW_PLUGINS = [
     'converse-muc-views',
     'converse-notification',
     'converse-omemo',
+    'converse-threads',
     'converse-profile',
     'converse-push',
     'converse-register',

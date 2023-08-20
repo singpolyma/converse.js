@@ -1,6 +1,8 @@
 import { __ } from 'i18n/index.js';
 import { getOOBURLMarkup } from 'utils/html.js';
 import { html } from 'lit';
+import { arrayBufferToHex } from 'headless/utils/arraybuffer';
+import Identicon from 'identicon.js';
 
 const tplEditedIcon = (el) => {
     const i18n_edited = __('This message has been edited');
@@ -30,6 +32,8 @@ export default (el) => {
     const spoiler_classes = el.model.get('is_spoiler') ? `spoiler ${el.model.get('is_spoiler_visible') ? '' : 'hidden'}` : '';
     const text = el.model.getMessageText();
     const show_oob = el.model.get('oob_url') && text !== el.model.get('oob_url');
+    const threadHash = el.model.get('thread_sha1');
+    const thread_identicon = threadHash ? new DOMParser().parseFromString(new Identicon(arrayBufferToHex(threadHash), { background: [0,0,0,0], format: 'svg', size: 16 }).render().getDump(), 'image/svg+xml').documentElement : null;
 
     return html`
         ${ el.model.get('is_spoiler') ? tplSpoilerHint : '' }
@@ -43,6 +47,7 @@ export default (el) => {
                 text="${text}"></converse-chat-message-body>
             ${ (el.model.get('received') && !el.model.isMeCommand() && !is_groupchat_message) ? tplCheckmark() : '' }
             ${ (el.model.get('edited')) ? tplEditedIcon(el) : '' }
+            <button @click=${el.onClickThread} class="btn btn--transparent" style="padding: 0; line-height: 1;">${ thread_identicon }</button>
         </span>
         ${ show_oob ? html`<div class="chat-msg__media">${getOOBURLMarkup(el.model.get('oob_url'))}</div>` : '' }
         <div class="chat-msg__error">${ el.model.get('error_text') || el.model.get('error') }</div>

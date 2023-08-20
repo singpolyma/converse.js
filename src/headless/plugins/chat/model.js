@@ -817,6 +817,10 @@ const ChatBox = ModelWithContact.extend({
         if (message.get('origin_id')) {
             stanza.c('origin-id', {'xmlns': Strophe.NS.SID, 'id': message.get('origin_id')}).root();
         }
+
+        if (message.get('thread')) {
+            stanza.c('thread').t(message.get('thread')).root();
+        }
         stanza.root();
         /**
          * *Hook* which allows plugins to update an outgoing message stanza
@@ -853,6 +857,7 @@ const ChatBox = ModelWithContact.extend({
             'sender': 'me',
             'time': (new Date()).toISOString(),
             'type': this.get('message_type'),
+            'thread': this.get('thread'),
             body,
             is_spoiler,
             origin_id
@@ -930,7 +935,7 @@ const ChatBox = ModelWithContact.extend({
             older_versions[edited_time] = message.getMessageText();
 
             message.save({
-                ...pick(attrs, ['body', 'is_only_emojis', 'media_urls', 'references', 'is_encrypted']),
+                ...pick(attrs, ['body', 'is_only_emojis', 'media_urls', 'references', 'is_encrypted', 'thread']),
                 ...{
                     'correcting': false,
                     'edited': (new Date()).toISOString(),
@@ -965,6 +970,8 @@ const ChatBox = ModelWithContact.extend({
         * @property { (_converse.Message | _converse.ChatRoomMessage) } data.message
         */
         api.trigger('sendMessage', {'chatbox': this, message});
+        this.set('thread', null);
+        this.set('thread_sha1', null);
         return message;
     },
 
