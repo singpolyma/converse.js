@@ -1020,6 +1020,7 @@ const ChatRoomMixin = {
             'is_only_emojis': text ? u.isOnlyEmojis(text) : false,
             'message': body,
             'nick': this.get('nick'),
+            'thread': this.get('thread'),
             'sender': 'me',
             'type': 'groupchat'
         }, getMediaURLsMetadata(text));
